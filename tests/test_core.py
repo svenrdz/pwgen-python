@@ -13,28 +13,32 @@ def test_generate_one(seed, expected):
     assert pw == expected
 
 
+def test_no_duplicate():
+    pwgen = Pwgen(num_pw=1000)
+    passwords = pwgen.generate()
+    assert len(set(passwords)) == len(passwords)
+
+
 @pytest.mark.parametrize(
-    "pw_length, expected",
-    [(0, 0), (100, 100)],
-    ids=["0", "100"],
+    "length",
+    [0, 100],
 )
-def test_pw_length(pw_length, expected):
-    pwgen = Pwgen(pw_length=pw_length)
+def test_pw_length(length):
+    pwgen = Pwgen(pw_length=length)
     for pw in pwgen.generate():
-        assert len(pw) == expected
+        assert len(pw) == length
 
 
 @pytest.mark.parametrize(
     "pw_length",
     [None, -1],
-    ids=["None", "-1"],
 )
 def test_pw_length_raises(pw_length):
     with pytest.raises((AssertionError, TypeError)):
         pwgen = Pwgen(pw_length=pw_length)
 
 
-@pytest.mark.parametrize("num_pw", [0, 100], ids=["0", "100"])
+@pytest.mark.parametrize("num_pw", [0, 100])
 def test_num_pw(num_pw):
     pwgen = Pwgen(num_pw=num_pw)
     assert len(pwgen.generate()) == num_pw
@@ -43,7 +47,6 @@ def test_num_pw(num_pw):
 @pytest.mark.parametrize(
     "num_pw",
     [None, -1],
-    ids=["None", "-1"],
 )
 def test_num_pw_raises(num_pw):
     with pytest.raises((AssertionError, TypeError)):

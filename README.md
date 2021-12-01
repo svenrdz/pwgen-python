@@ -48,5 +48,5 @@ Options:
 ## Testing
 
 ```
-pytest -v tests/
+› make test
 ```

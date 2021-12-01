@@ -5,7 +5,12 @@ from hashlib import sha1
 
 
 class Sha1File(click.ParamType):
-    name = "sha1"
+    """
+    Custom click.ParamType that opens a file and hashes its bytes content.
+    Add extra seed after the path separated with `#`.
+    """
+
+    name = "/path/to/file[#seed]"
 
     def convert(
         self,

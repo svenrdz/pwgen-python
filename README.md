@@ -49,4 +49,29 @@ Options:
 
 ```
 › make test
+pytest --cov=. --cov-report term-missing tests/
+============================ test session starts =============================
+platform darwin -- Python 3.9.1, pytest-6.2.5, py-1.11.0, pluggy-0.13.1
+rootdir: /Users/sven/ws/dalibo/pwgen-python
+plugins: anyio-2.2.0, web3-5.19.0, cov-3.0.0
+collected 26 items
+
+tests/test_cli.py ...............                                      [ 57%]
+tests/test_core.py ...........                                         [100%]
+
+---------- coverage: platform darwin, python 3.9.1-final-0 -----------
+Name                       Stmts   Miss  Cover   Missing
+--------------------------------------------------------
+pwgen_python/__init__.py      50      1    98%   81
+pwgen_python/core.py          25      0   100%
+pwgen_python/utils.py         18      1    94%   27
+setup.py                       2      2     0%   1-3
+tests/__init__.py              0      0   100%
+tests/test_cli.py             92      0   100%
+tests/test_core.py            28      0   100%
+--------------------------------------------------------
+TOTAL                        215      4    98%
+
+
+============================= 26 passed in 0.09s =============================
 ```

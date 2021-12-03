@@ -4,17 +4,18 @@ from pathlib import Path
 from click.testing import CliRunner
 
 from pwgen_python import cli
+from pwgen_python.utils import GeneratorFlags as gf
 
 
 def enum_output(output: str) -> list[tuple[int, str]]:
     output_list = output.replace(" ", "\n").split()
-    for i, pwd in enumerate(output_list):
-        yield i, pwd
+    for i, pw in enumerate(output_list):
+        yield i, pw
 
 
 def split_output(output: str) -> list[str]:
-    for i, pwd in enum_output(output):
-        yield pwd
+    for i, pw in enum_output(output):
+        yield pw
 
 
 PW_FILE = Path(__file__).parent / "passwords.json"
@@ -42,17 +43,31 @@ def pytest_generate_tests(metafunc):
 class TestCliStrSeed:
     scenarios = [
         (
-            "seed1",
+            "seed1-readable",
             {
-                "opts": ["--seed", PW_DICT[0]["seed"]],
-                "passwords": PW_DICT[0]["passwords"],
+                "opts": ["--seed", PW_DICT["readable"][0]["seed"]],
+                "passwords": PW_DICT["readable"][0]["passwords"],
             },
         ),
         (
-            "seed2",
+            "seed2-readable",
             {
-                "opts": ["--seed", PW_DICT[1]["seed"]],
-                "passwords": PW_DICT[1]["passwords"],
+                "opts": ["--seed", PW_DICT["readable"][1]["seed"]],
+                "passwords": PW_DICT["readable"][1]["passwords"],
+            },
+        ),
+        (
+            "seed1-secure",
+            {
+                "opts": ["--secure", "--seed", PW_DICT["secure"][0]["seed"]],
+                "passwords": PW_DICT["secure"][0]["passwords"],
+            },
+        ),
+        (
+            "seed2-secure",
+            {
+                "opts": ["--secure", "--seed", PW_DICT["secure"][1]["seed"]],
+                "passwords": PW_DICT["secure"][1]["passwords"],
             },
         ),
     ]
@@ -63,8 +78,8 @@ class TestCliStrSeed:
         assert result.exit_code == 0
         output = list(split_output(result.output))
         assert len(output) == len(passwords)
-        for pwd, expected in zip(output, passwords):
-            assert pwd == expected
+        for pw, expected in zip(output, passwords):
+            assert pw == expected
 
     def test_opt_1(self, opts, passwords):
         runner = CliRunner()
@@ -73,8 +88,8 @@ class TestCliStrSeed:
         assert result.exit_code == 0
         output = list(split_output(result.output))
         assert len(output) == 1
-        for pwd, expected in zip(output, passwords):
-            assert pwd == expected
+        for pw, expected in zip(output, passwords):
+            assert pw == expected
 
     def test_opt_1_with_num_passwords_10(self, opts, passwords):
         runner = CliRunner()
@@ -83,8 +98,8 @@ class TestCliStrSeed:
         assert result.exit_code == 0
         output = list(split_output(result.output))
         assert len(output) == 10
-        for pwd, expected in zip(output, passwords):
-            assert pwd == expected
+        for pw, expected in zip(output, passwords):
+            assert pw == expected
 
     def test_arg_num_pw(self, opts, passwords):
         runner = CliRunner()
@@ -93,8 +108,8 @@ class TestCliStrSeed:
         assert result.exit_code == 0
         output = list(split_output(result.output))
         assert len(output) == 10
-        for pwd, expected in zip(output, passwords):
-            assert pwd == expected
+        for pw, expected in zip(output, passwords):
+            assert pw == expected
 
 
 class TestCliSha1Seed:
@@ -103,14 +118,14 @@ class TestCliSha1Seed:
             "pw_file",
             {
                 "opts": ["8", "1", "--sha1", str(PW_FILE)],
-                "password": "jElQ9bXA",
+                "password": "oSOin1o3",
             },
         ),
         (
             "pw_file_with_hash",
             {
                 "opts": ["8", "1", "--sha1", str(PW_FILE) + "#seed"],
-                "password": "ilKYAUz0",
+                "password": "Pt4aimNn",
             },
         ),
     ]
@@ -121,6 +136,13 @@ class TestCliSha1Seed:
         assert result.exit_code == 0
         output = result.output.strip()
         assert output == password
+
+
+def test_sha1file_notafile():
+    runner = CliRunner()
+    result = runner.invoke(cli, ["--sha1", "notafile"])
+    assert result.exit_code == 2
+    assert '"notafile" is not a file' in result.output
 
 
 def test_no_passwords():

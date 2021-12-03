@@ -2,6 +2,7 @@ import click
 import typing as t
 from pathlib import Path
 from hashlib import sha1
+from enum import Flag, auto
 
 
 class Sha1File(click.ParamType):
@@ -34,3 +35,16 @@ def assert_natural(name: str, value: int):
     assert (
         isinstance(value, int) and value >= 0
     ), f"{name} ({value}) should be >= 0"
+
+
+class GeneratorFlags(Flag):
+    Vowels = auto()
+    Digits = auto()
+    Uppercase = auto()
+    Secure = auto()
+    Symbols = auto()
+    NoAmbiguous = auto()
+
+    @classmethod
+    def default(cls):
+        return cls.Vowels | cls.Digits | cls.Uppercase

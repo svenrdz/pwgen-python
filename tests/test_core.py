@@ -1,15 +1,27 @@
 import pytest
 from pwgen_python import Pwgen
+from pwgen_python.core import Pwgen, isambiguous, gf
 
 
 @pytest.mark.parametrize(
     "seed, expected",
-    [("seed1", "lFOvypXE"), ("seed2", "dnQqDzB3")],
+    [("seed1", "aingnYnc"), ("seed2", "oinTUinr")],
     ids=["seed1", "seed2"],
 )
-def test_generate_one(seed, expected):
+def test_generate_one_readable(seed, expected):
     pwgen = Pwgen(seed=seed)
-    pw = pwgen.generate_one()
+    pw, _ = pwgen.readable()
+    assert pw == expected
+
+
+@pytest.mark.parametrize(
+    "seed, expected",
+    [("seed1", "pHSeutOG"), ("seed2", "frVvFyC3")],
+    ids=["seed1", "seed2"],
+)
+def test_generate_one_secure(seed, expected):
+    pwgen = Pwgen(seed=seed)
+    pw, _ = pwgen.secure()
     assert pw == expected
 
 
@@ -51,3 +63,56 @@ def test_num_pw(num_pw):
 def test_num_pw_raises(num_pw):
     with pytest.raises((AssertionError, TypeError)):
         pwgen = Pwgen(num_pw=num_pw)
+
+
+@pytest.mark.parametrize("phoneme, ambiguous", [("uIn", True), ("uin", False)])
+def test_isambiguous(phoneme, ambiguous):
+    assert isambiguous(phoneme) == ambiguous
+
+
+@pytest.mark.parametrize(
+    "flags", [gf.default(), gf.default() | gf.Secure], ids=["redable", "secure"]
+)
+def test_ambiguous(flags):
+    from pwgen_python.core import AMBIGUOUS_SET
+
+    flags |= gf.NoAmbiguous
+    pwgen = Pwgen(flags=flags)
+    for pw in pwgen.generate():
+        assert len(set(pw) & AMBIGUOUS_SET) == 0
+
+
+@pytest.mark.parametrize(
+    "flags", [gf.default(), gf.default() | gf.Secure], ids=["redable", "secure"]
+)
+def test_lowercase(flags):
+    from string import ascii_uppercase
+
+    flags &= ~gf.Uppercase
+    pwgen = Pwgen(flags=flags)
+    for pw in pwgen.generate():
+        assert len(set(pw) & set(ascii_uppercase)) == 0
+
+
+@pytest.mark.parametrize(
+    "flags", [gf.default(), gf.default() | gf.Secure], ids=["redable", "secure"]
+)
+def test_symbols(flags):
+    from string import punctuation
+
+    flags |= gf.Symbols
+    pwgen = Pwgen(flags=flags)
+    for pw in pwgen.generate():
+        assert len(set(pw) & set(punctuation)) > 0
+
+
+@pytest.mark.parametrize(
+    "flags", [gf.default(), gf.default() | gf.Secure], ids=["redable", "secure"]
+)
+def test_no_digits(flags):
+    from string import digits
+
+    flags &= ~gf.Digits
+    pwgen = Pwgen(flags=flags)
+    for pw in pwgen.generate():
+        assert len(set(pw) & set(digits)) == 0
